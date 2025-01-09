@@ -11,9 +11,8 @@ import {
 import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
-import { cookies } from 'next/headers';
-import { getIronSession } from 'iron-session';
 import { redirect } from 'next/navigation';
+import getSession from '@/lib/session';
 
 const checkPassword = ({
   password,
@@ -74,8 +73,8 @@ const formSchema = z
       .string({
         required_error: PASSWORD_REQUIRED_ERROR,
       })
-      .min(PASSWORD_MIN_LENGTH),
-    // .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+      .min(PASSWORD_MIN_LENGTH)
+      .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirm_password: z.string().min(PASSWORD_MIN_LENGTH),
   })
   .refine(checkPassword, {
@@ -106,17 +105,7 @@ export const createAccount = async (prevState: any, formData: FormData) => {
       },
     });
 
-    // log the user in
-    // const session = await getIronSession(cookies(), {
-    //   cookieName: 'delicious-karrot',
-    //   password: process.env.COOKIE_PASSWORD!,
-    // });
-
-    const session = await getIronSession(await cookies(), {
-      cookieName: 'delicious-karrot',
-      password: process.env.COOKIE_PASSWORD!,
-    });
-    // @ts-ignore
+    const session = await getSession();
     session.id = user.id;
     await session.save();
     redirect('/profile');
