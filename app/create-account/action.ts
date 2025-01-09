@@ -24,30 +24,6 @@ const checkPassword = ({
   return password === confirm_password;
 };
 
-const checkUniqueUsername = async (username: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      username,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return Boolean(user) === false;
-};
-
-const checkUniqueEmail = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return Boolean(user) === false;
-};
-
 const formSchema = z
   .object({
     username: z
@@ -58,17 +34,11 @@ const formSchema = z
       .min(USERNAME_MIN_LENGTH)
       .max(USERNAME_MAX_LENGTH)
       .toLowerCase()
-      .trim()
-      .refine(checkUniqueUsername, 'This username is already taken'),
+      .trim(),
     // .transform((username) => {
     //   return `🔥 ${username} 🔥`;
     // }),
-    email: z
-      .string()
-      .email()
-      .toLowerCase()
-      .trim()
-      .refine(checkUniqueEmail, 'This email is already taken'),
+    email: z.string().email().toLowerCase().trim(),
     password: z
       .string({
         required_error: PASSWORD_REQUIRED_ERROR,
@@ -76,6 +46,44 @@ const formSchema = z
       .min(PASSWORD_MIN_LENGTH)
       .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirm_password: z.string().min(PASSWORD_MIN_LENGTH),
+  })
+  .superRefine(async (data, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        username: data.username,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'This username is already taken',
+        path: ['username'],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
+  .superRefine(async (data, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        email: data.email,
+      },
+      select: {
+        id: true,
+      },
+    });
+    if (user) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'This email is already taken',
+        path: ['email'],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
   })
   .refine(checkPassword, {
     message: 'Both passwords should be the same!',
