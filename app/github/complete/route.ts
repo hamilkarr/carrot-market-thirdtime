@@ -1,12 +1,13 @@
 import db from '@/lib/db';
-import getSession from '@/lib/session';
-import { notFound, redirect } from 'next/navigation';
-import { NextRequest } from 'next/server';
+import { redirect } from 'next/navigation';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   if (!code) {
-    return notFound();
+    return new NextResponse(null, {
+      status: 400,
+    });
   }
   const accessTokenParams = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID!,
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
   });
   const { error, access_token } = await accessTokenResponse.json();
   if (error) {
-    return new Response(null, {
+    return new NextResponse(null, {
       status: 400,
     });
   }
@@ -42,9 +43,7 @@ export async function GET(request: NextRequest) {
     },
   });
   if (user) {
-    const session = await getSession();
-    session.id = user.id;
-    await session.save();
+    await login(user.id);
     return redirect('/profile');
   }
   const newUser = await db.user.create({
@@ -57,8 +56,6 @@ export async function GET(request: NextRequest) {
       id: true,
     },
   });
-  const session = await getSession();
-  session.id = newUser.id;
-  await session.save();
+  await login(newUser.id);
   return redirect('/profile');
 }

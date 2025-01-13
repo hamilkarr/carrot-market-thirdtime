@@ -9,7 +9,7 @@ import {
 } from '@/lib/constants';
 import db from '@/lib/db';
 import bcrypt from 'bcrypt';
-import getSession from '@/lib/session';
+import { login } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 const checkEmailExists = async (email: string) => {
@@ -39,7 +39,7 @@ const formSchema = z.object({
     .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
 });
 
-const login = async (prevState: any, data: FormData) => {
+const loginAction = async (prevState: any, data: FormData) => {
   const result = await formSchema.safeParseAsync({
     email: data.get('email'),
     password: data.get('password'),
@@ -61,9 +61,7 @@ const login = async (prevState: any, data: FormData) => {
       user!.password ?? '',
     );
     if (isPasswordCorrect) {
-      const session = await getSession();
-      session.id = user!.id;
-      await session.save();
+      await login(user!.id);
       redirect('/');
     } else {
       return {
@@ -76,4 +74,4 @@ const login = async (prevState: any, data: FormData) => {
   }
 };
 
-export default login;
+export default loginAction;
