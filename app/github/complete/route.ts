@@ -1,20 +1,20 @@
 import db from '@/lib/db';
 import getSession from '@/lib/session';
 import { notFound, redirect } from 'next/navigation';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   if (!code) {
     return notFound();
   }
-  const params = new URLSearchParams({
+  const accessTokenParams = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID!,
     client_secret: process.env.GITHUB_CLIENT_SECRET!,
     code,
-  });
-  const accessTokenUrl = `https://github.com/login/oauth/access_token?${params.toString()}`;
-  const accessTokenResponse = await fetch(accessTokenUrl, {
+  }).toString();
+  const accessTokenURL = `https://github.com/login/oauth/access_token?${accessTokenParams}`;
+  const accessTokenResponse = await fetch(accessTokenURL, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -22,9 +22,10 @@ export async function GET(request: NextRequest) {
   });
   const { error, access_token } = await accessTokenResponse.json();
   if (error) {
-    return new NextResponse(null, { status: 400 });
+    return new Response(null, {
+      status: 400,
+    });
   }
-
   const userProfileResponse = await fetch('https://api.github.com/user', {
     headers: {
       Authorization: `Bearer ${access_token}`,
@@ -43,14 +44,14 @@ export async function GET(request: NextRequest) {
   if (user) {
     const session = await getSession();
     session.id = user.id;
-    session.save();
+    await session.save();
     return redirect('/profile');
   }
   const newUser = await db.user.create({
     data: {
+      username: login,
       github_id: id.toString(),
       avatar: avatar_url,
-      username: login,
     },
     select: {
       id: true,
@@ -58,6 +59,6 @@ export async function GET(request: NextRequest) {
   });
   const session = await getSession();
   session.id = newUser.id;
-  session.save();
+  await session.save();
   return redirect('/profile');
 }
