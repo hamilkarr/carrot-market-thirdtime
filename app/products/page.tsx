@@ -17,7 +17,7 @@ async function getUser() {
   notFound();
 }
 
-export default async function Profile() {
+export default async function Products() {
   const user = await getUser();
   const logOut = async () => {
     'use server';

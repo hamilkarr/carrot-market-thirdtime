@@ -35,8 +35,8 @@ const formSchema = z.object({
     .string({
       required_error: PASSWORD_REQUIRED_ERROR,
     })
-    .min(PASSWORD_MIN_LENGTH),
-  // .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
+    .min(PASSWORD_MIN_LENGTH)
+    .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
 });
 
 const login = async (prevState: any, data: FormData) => {
