@@ -1,6 +1,5 @@
 import db from '@/lib/db';
 import { createUserSession } from '@/lib/session';
-import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
 // 1. GitHub Access Token을 가져오는 함수
@@ -40,7 +39,20 @@ async function getUserEmail(accessToken: string) {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   const userEmails = await userEmailResponse.json();
-  return userEmails[0]?.email ?? '';
+
+  if (userEmails.length === 0) return null;
+
+  const email = userEmails[0].email;
+  const isExisting = await isExistingEmail(email);
+  return isExisting ? null : email;
+}
+
+async function isExistingEmail(email: string): Promise<boolean> {
+  const existingEmail = await db.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  return existingEmail ? true : false;
 }
 
 async function findUserByGithubId(id: string): Promise<string | null> {
@@ -76,7 +88,6 @@ async function createUser(
   return newUser.id.toString();
 }
 
-// ----- GET 함수 수정: 분리된 함수들 사용 -----
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   if (!code) {
