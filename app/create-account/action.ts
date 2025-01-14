@@ -12,7 +12,7 @@ import db from '@/lib/db';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { redirect } from 'next/navigation';
-import { login } from '@/lib/session';
+import { createUserSession } from '@/lib/session';
 
 const checkPassword = ({
   password,
@@ -113,7 +113,7 @@ export const createAccount = async (prevState: any, formData: FormData) => {
       },
     });
 
-    await login(user.id);
+    await createUserSession(user.id);
     redirect('/profile');
   }
 };

@@ -12,8 +12,8 @@ export const getSession = async () => {
   });
 };
 
-export const login = async (id: number) => {
+export async function createUserSession(id: number) {
   const session = await getSession();
   session.id = id;
   await session.save();
-};
+}

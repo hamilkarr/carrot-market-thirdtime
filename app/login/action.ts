@@ -9,7 +9,7 @@ import {
 } from '@/lib/constants';
 import db from '@/lib/db';
 import bcrypt from 'bcrypt';
-import { login } from '@/lib/session';
+import { createUserSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 const checkEmailExists = async (email: string) => {
@@ -61,7 +61,7 @@ const loginAction = async (prevState: any, data: FormData) => {
       user!.password ?? '',
     );
     if (isPasswordCorrect) {
-      await login(user!.id);
+      await createUserSession(user!.id);
       redirect('/');
     } else {
       return {

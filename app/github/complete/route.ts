@@ -1,4 +1,5 @@
 import db from '@/lib/db';
+import { createUserSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
     cache: 'no-cache',
   });
   const { id, avatar_url, login } = await userProfileResponse.json();
+
   const user = await db.user.findUnique({
     where: {
       github_id: id.toString(),
@@ -43,19 +45,43 @@ export async function GET(request: NextRequest) {
     },
   });
   if (user) {
-    await login(user.id);
+    await createUserSession(user.id);
     return redirect('/profile');
   }
-  const newUser = await db.user.create({
-    data: {
+
+  const userEmailResponse = await fetch('https://api.github.com/user/emails', {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  });
+  const userEmails = await userEmailResponse.json();
+  const email = userEmails[0].email;
+
+  const isUserNameExists = await db.user.findUnique({
+    where: {
       username: login,
-      github_id: id.toString(),
-      avatar: avatar_url,
     },
     select: {
       id: true,
     },
   });
-  await login(newUser.id);
+
+  const generateRandomString = () => {
+    return Math.random().toString(36).substring(2, 8);
+  };
+
+  const nameTail = isUserNameExists ? `-${generateRandomString()}` : '';
+  const newUser = await db.user.create({
+    data: {
+      username: `${login}${nameTail}`,
+      github_id: id.toString(),
+      avatar: avatar_url,
+      email,
+    },
+    select: {
+      id: true,
+    },
+  });
+  await createUserSession(newUser.id);
   return redirect('/profile');
 }
