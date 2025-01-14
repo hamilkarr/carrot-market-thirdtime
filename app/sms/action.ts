@@ -1,5 +1,6 @@
 'use server';
 
+import twilio from 'twilio';
 import { z } from 'zod';
 import validator from 'validator';
 import { redirect } from 'next/navigation';
@@ -84,6 +85,17 @@ export const smsLogin = async (prevState: ActionState, data: FormData) => {
             },
           },
         },
+      });
+      const client = twilio(
+        process.env.TWILIO_ACCOUNT_SID,
+        process.env.TWILIO_AUTH_TOKEN,
+      );
+      await client.messages.create({
+        to: result.data,
+        // to: process.env.TWILIO_PHONE_NUMBER!,
+        // from: '+12053725555',
+        from: process.env.TWILIO_PHONE_NUMBER,
+        body: `Your verification code is ${newToken}`,
       });
       return { token: true };
     }
