@@ -27,6 +27,7 @@ const SMSLogin = () => {
             required
             min={100000}
             max={999999}
+            errors={state?.error?.formErrors}
           />
         ) : (
           <FormInput
@@ -37,7 +38,7 @@ const SMSLogin = () => {
             errors={state?.error?.formErrors}
           />
         )}
-        <FormButton text={state.token ? 'Verify' : 'Send SMS'} />
+        <FormButton text={state.token ? 'Verify Token' : 'Send SMS'} />
       </form>
     </div>
   );
