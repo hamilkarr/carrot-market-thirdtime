@@ -23,7 +23,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
       ) => {
         const element = entries[0];
         if (element.isIntersecting && trigger.current) {
-          observer.unobserve(element.target);
+          observer.unobserve(trigger.current);
           setIsLoading(true);
           const newProducts = await getMoreProducts(page + 1);
           if (newProducts.length !== 0) {
@@ -34,7 +34,6 @@ export default function ProductList({ initialProducts }: ProductListProps) {
           }
           setIsLoading(false);
         }
-        console.log(entries[0]);
       },
       {
         threshold: 1.0,
@@ -55,10 +54,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
       {!isLastPage && (
         <span
           ref={trigger}
-          style={{
-            marginTop: `${(page + 1) * 300}vh`,
-          }}
-          className="mb-96 px-3 py-2 w-fit mx-auto text-sm font-semibold bg-orange-500 rounded-md hover:opacity-90 active:scale-95 transition-all duration-300"
+          className="px-3 py-2 w-fit mx-auto text-sm font-semibold bg-orange-500 rounded-md hover:opacity-90 active:scale-95 transition-all duration-300"
         >
           {isLoading ? 'Loading...' : 'Show More'}
         </span>
