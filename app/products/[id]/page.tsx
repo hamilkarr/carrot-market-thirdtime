@@ -34,11 +34,14 @@ export default async function ProductDetail({
 }: {
   params: { id: string };
 }) {
-  const id = Number(params.id);
-  if (isNaN(id)) {
+  const { id } = await params;
+  const idNumber = Number(id);
+
+  if (isNaN(idNumber)) {
     return notFound();
   }
-  const product = await getProduct(id);
+
+  const product = await getProduct(idNumber);
   if (!product) {
     return notFound();
   }
@@ -50,8 +53,9 @@ export default async function ProductDetail({
         <Image
           fill
           className="object-cover"
-          src={product.photo}
+          src={`${product.photo}/width=500,height=500`}
           alt={product.title}
+          priority
         />
       </div>
       <div className="p-5 flex items-center gap-3 border-b border-neutral-700">
@@ -79,7 +83,7 @@ export default async function ProductDetail({
         <span className="font-semibold text-xl">
           {product.price.toLocaleString('ko-KR')}원
         </span>
-        {isOwner && <DeleteButton id={id} />}
+        {isOwner && <DeleteButton id={idNumber} />}
         <Link
           className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
           href={``}
