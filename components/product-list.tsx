@@ -51,14 +51,14 @@ export default function ProductList({ initialProducts }: ProductListProps) {
       {products.map((product) => (
         <ListProduct key={product.id} {...product} />
       ))}
-      {!isLastPage && (
+      {/* {!isLastPage && (
         <span
           ref={trigger}
           className="px-3 py-2 w-fit mx-auto text-sm font-semibold bg-orange-500 rounded-md hover:opacity-90 active:scale-95 transition-all duration-300"
         >
           {isLoading ? 'Loading...' : 'Show More'}
         </span>
-      )}
+      )} */}
     </div>
   );
 }

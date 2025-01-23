@@ -6,7 +6,7 @@ interface ListProductProps {
   title: string;
   price: number;
   photo: string | null;
-  created_at: Date;
+  created_at: Date | string;
   id: number;
 }
 
@@ -17,6 +17,8 @@ export default function ListProduct({
   created_at,
   id,
 }: ListProductProps) {
+  const date = created_at instanceof Date ? created_at : new Date(created_at);
+
   return (
     <Link href={`/products/${id}`}>
       <div className="flex gap-5">
@@ -33,7 +35,7 @@ export default function ListProduct({
         )}
         <div className="flex flex-col gap-2 *:text-white">
           <h2 className="text-lg">{title}</h2>
-          <p>{formatToTimeAgo(created_at.toISOString())}</p>
+          <p>{formatToTimeAgo(date.toISOString())}</p>
           <p className="text-lg font-semibold">
             {price.toLocaleString('ko-KR')}원
           </p>

@@ -1,9 +1,17 @@
-import ListProduct from '@/components/list-product';
 import ProductList from '@/components/product-list';
 import db from '@/lib/db';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import { Prisma } from '@prisma/client';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import Link from 'next/link';
+
+const getCashedProducts = unstable_cache(
+  getInitialProducts,
+  ['home-products'],
+  {
+    revalidate: 60,
+  },
+);
 
 async function getInitialProducts() {
   const products = await db.product.findMany({
@@ -14,7 +22,7 @@ async function getInitialProducts() {
       created_at: true,
       id: true,
     },
-    take: 1,
+    // take: 1,
     orderBy: {
       created_at: 'desc',
     },
@@ -26,10 +34,19 @@ export type initialProducts = Prisma.PromiseReturnType<
   typeof getInitialProducts
 >;
 
+export const dynamic = 'force-dynamic';
+
 export default async function Products() {
-  const initialProducts = await getInitialProducts();
+  const initialProducts = await getCashedProducts();
+  const revalidate = async () => {
+    'use server';
+    revalidatePath('/products');
+  };
   return (
     <div>
+      <form action={revalidate}>
+        <button type="submit">revalidate</button>
+      </form>
       <ProductList initialProducts={initialProducts} />
       <Link
         href="/products/add"
