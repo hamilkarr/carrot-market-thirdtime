@@ -34,6 +34,10 @@ export type initialProducts = Prisma.PromiseReturnType<
   typeof getInitialProducts
 >;
 
+export const metadata = {
+  title: 'Products',
+};
+
 export const dynamic = 'force-dynamic';
 
 export default async function Products() {

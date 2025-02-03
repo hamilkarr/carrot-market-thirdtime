@@ -8,10 +8,10 @@ import DeleteButton from './delete-product';
 import { unstable_cache } from 'next/cache';
 
 async function getIsOwner(userId: number) {
-  const session = await getSession();
-  if (session.id) {
-    return userId === session.id;
-  }
+  // const session = await getSession();
+  // if (session.id) {
+  //   return userId === session.id;
+  // }
   return false;
 }
 
@@ -125,4 +125,16 @@ export default async function ProductDetail({
       </div>
     </div>
   );
+}
+
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const products = await db.product.findMany({
+    select: {
+      id: true,
+    },
+  });
+
+  return products.map((product) => ({ id: product.id.toString() }));
 }
