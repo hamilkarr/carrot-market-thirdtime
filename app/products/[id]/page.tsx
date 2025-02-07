@@ -8,10 +8,10 @@ import DeleteButton from './delete-product';
 import { unstable_cache } from 'next/cache';
 
 async function getIsOwner(userId: number) {
-  // const session = await getSession();
-  // if (session.id) {
-  //   return userId === session.id;
-  // }
+  const session = await getSession();
+  if (session.id) {
+    return userId === session.id;
+  }
   return false;
 }
 

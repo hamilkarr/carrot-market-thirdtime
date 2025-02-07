@@ -5,14 +5,6 @@ import { Prisma } from '@prisma/client';
 import { revalidatePath, unstable_cache } from 'next/cache';
 import Link from 'next/link';
 
-const getCashedProducts = unstable_cache(
-  getInitialProducts,
-  ['home-products'],
-  {
-    revalidate: 60,
-  },
-);
-
 async function getInitialProducts() {
   const products = await db.product.findMany({
     select: {
@@ -37,6 +29,14 @@ export type initialProducts = Prisma.PromiseReturnType<
 export const metadata = {
   title: 'Products',
 };
+
+const getCashedProducts = unstable_cache(
+  getInitialProducts,
+  ['home-products'],
+  {
+    revalidate: 60,
+  },
+);
 
 export const dynamic = 'force-dynamic';
 
