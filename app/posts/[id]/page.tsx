@@ -86,38 +86,6 @@ export default async function PostDetail({
     return notFound();
   }
 
-  const likePost = async () => {
-    'use server';
-    console.log('likePost');
-    const session = await getSession();
-    try {
-      await db.like.create({
-        data: {
-          postId: numId,
-          userId: session.id!,
-        },
-      });
-      revalidateTag(`like-status-${numId}`);
-    } catch (e) {}
-  };
-
-  const dislikePost = async () => {
-    'use server';
-    console.log('dislikePost');
-    try {
-      const session = await getSession();
-      await db.like.delete({
-        where: {
-          id: {
-            postId: numId,
-            userId: session.id!,
-          },
-        },
-      });
-      revalidateTag(`like-status-${numId}`);
-    } catch (e) {}
-  };
-
   const session = await getSession();
   const { likeCount, isLiked } = await getCachedLikeStatus(
     numId,
@@ -147,7 +115,7 @@ export default async function PostDetail({
           <EyeIcon className="size-5" />
           <span>조회 {post.views}</span>
         </div>
-        <LikeButton isLiked={isLiked} likeCount={likeCount} />
+        <LikeButton isLiked={isLiked} likeCount={likeCount} postId={numId} />
       </div>
     </div>
   );
